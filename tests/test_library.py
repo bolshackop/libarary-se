@@ -1,35 +1,50 @@
 import unittest
-from src.library import Library
+from src.library import Book, Library
 
-class TestLibrarySprint1(unittest.TestCase):
-    def setUp(self):
-        self.lib = Library()
+class TestLibrary(unittest.TestCase):
 
     def test_add_book_success(self):
-        self.lib.add_book("B1", "1984", "George Orwell")
-        self.assertIn("B1", self.lib.books)
+        lib = Library()
+        lib.add_book(Book(1, "DSA", "Anuj"))
+        self.assertEqual(len(lib.get_all_books()), 1)
 
-    def test_add_duplicate_book(self):
-        self.lib.add_book("B1", "1984", "George Orwell")
+    def test_duplicate_book(self):
+        lib = Library()
+        lib.add_book(Book(1, "DSA", "Anuj"))
         with self.assertRaises(ValueError):
-            self.lib.add_book("B1", "Animal Farm", "George Orwell")
+            lib.add_book(Book(1, "OS", "Someone"))
 
-class TestLibrarySprint2(unittest.TestCase):
-    def setUp(self):
-        self.lib = Library()
-        self.lib.add_book("B1", "1984", "George Orwell")
-
-    def test_borrow_book(self):
-        self.lib.borrow_book("B1")
-        self.assertTrue(self.lib.books["B1"]["borrowed"])
+    def test_borrow_available_book(self):
+        lib = Library()
+        lib.add_book(Book(1, "DSA", "Anuj"))
+        lib.borrow_book(1)
+        self.assertTrue(lib.books[1].is_borrowed)
 
     def test_borrow_unavailable_book(self):
-        self.lib.borrow_book("B1")
+        lib = Library()
+        lib.add_book(Book(1, "DSA", "Anuj"))
+        lib.borrow_book(1)
         with self.assertRaises(ValueError):
-            self.lib.borrow_book("B1")
+            lib.borrow_book(1)
 
     def test_return_book(self):
-        self.lib.borrow_book("B1")
-        self.lib.return_book("B1")
-        self.assertFalse(self.lib.books["B1"]["borrowed"])
+        lib = Library()
+        lib.add_book(Book(1, "DSA", "Anuj"))
+        lib.borrow_book(1)
+        lib.return_book(1)
+        self.assertFalse(lib.books[1].is_borrowed)
+
+    def test_report_contains_header(self):
+        lib = Library()
+        report = lib.generate_report()
+        self.assertIn("ID | Title | Author | Status", report)
+
+    def test_report_contains_book_entry(self):
+        lib = Library()
+        lib.add_book(Book(1, "DSA", "Anuj"))
+        report = lib.generate_report()
+        self.assertIn("1 | DSA | Anuj", report)
+
+if __name__ == "__main__":
+    unittest.main()
 
