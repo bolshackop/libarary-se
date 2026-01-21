@@ -1,49 +1,48 @@
 import unittest
-from src.library import Book, Library
+from src.library import Library
+
 
 class TestLibrary(unittest.TestCase):
 
+    def setUp(self):
+        self.library = Library()
+
     def test_add_book_success(self):
-        lib = Library()
-        lib.add_book(Book(1, "DSA", "Anuj"))
-        self.assertEqual(len(lib.get_all_books()), 1)
+        self.library.add_book(1, "Clean Code", "Robert C. Martin")
+        self.assertIn(1, self.library.books)
 
-    def test_duplicate_book(self):
-        lib = Library()
-        lib.add_book(Book(1, "DSA", "Anuj"))
+    def test_add_duplicate_book_id(self):
+        self.library.add_book(1, "Clean Code", "Robert C. Martin")
         with self.assertRaises(ValueError):
-            lib.add_book(Book(1, "OS", "Someone"))
+            self.library.add_book(1, "Refactoring", "Martin Fowler")
 
-    def test_borrow_available_book(self):
-        lib = Library()
-        lib.add_book(Book(1, "DSA", "Anuj"))
-        lib.borrow_book(1)
-        self.assertTrue(lib.books[1].is_borrowed)
+    def test_borrow_book_success(self):
+        self.library.add_book(1, "Clean Code", "Robert C. Martin")
+        self.library.borrow_book(1)
+        self.assertTrue(self.library.books[1]["borrowed"])
 
-    def test_borrow_unavailable_book(self):
-        lib = Library()
-        lib.add_book(Book(1, "DSA", "Anuj"))
-        lib.borrow_book(1)
+    def test_borrow_nonexistent_book(self):
         with self.assertRaises(ValueError):
-            lib.borrow_book(1)
+            self.library.borrow_book(99)
+
+    def test_borrow_already_borrowed_book(self):
+        self.library.add_book(1, "Clean Code", "Robert C. Martin")
+        self.library.borrow_book(1)
+        with self.assertRaises(ValueError):
+            self.library.borrow_book(1)
 
     def test_return_book(self):
-        lib = Library()
-        lib.add_book(Book(1, "DSA", "Anuj"))
-        lib.borrow_book(1)
-        lib.return_book(1)
-        self.assertFalse(lib.books[1].is_borrowed)
+        self.library.add_book(1, "Clean Code", "Robert C. Martin")
+        self.library.borrow_book(1)
+        self.library.return_book(1)
+        self.assertFalse(self.library.books[1]["borrowed"])
 
-    def test_report_contains_header(self):
-        lib = Library()
-        report = lib.generate_report()
-        self.assertIn("ID | Title | Author | Status", report)
+    def test_generate_report(self):
+        self.library.add_book(1, "Clean Code", "Robert C. Martin")
+        report = self.library.generate_report()
+        self.assertIn("Clean Code", report)
+        self.assertIn("Available", report)
 
-    def test_report_contains_book_entry(self):
-        lib = Library()
-        lib.add_book(Book(1, "DSA", "Anuj"))
-        report = lib.generate_report()
-        self.assertIn("1 | DSA | Anuj", report)
 
 if __name__ == "__main__":
     unittest.main()
